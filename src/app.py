@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Character
+from models import db, User, Character, Episode, Location
 #from models import Person
 
 app = Flask(__name__)
@@ -50,6 +50,18 @@ def get_all_characters():
     characters = Character.query.all()
     characters_serialized = [x.serialize() for x in characters]
     return jsonify({"body" : characters_serialized}), 200
+
+@app.route('/episodes', methods=['GET'])
+def get_all_episodes():
+    episodes = Episode.query.all()
+    episodes_serialized = [x.serialize() for x in episodes]
+    return jsonify({"body" : episodes_serialized}), 200
+
+@app.route('/locations', methods=['GET'])
+def get_all_locations():
+    locations = Location.query.all()
+    locations_serialized = [x.serialize() for x in locations]
+    return jsonify({"body" : locations_serialized}), 200
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':

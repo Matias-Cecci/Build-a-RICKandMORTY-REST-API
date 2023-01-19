@@ -47,12 +47,27 @@ class Location(db.Model):
     location_type = db.Column(db.String(250), unique=False, nullable=False)
     dimension = db.Column(db.String(250), unique=False, nullable=False)
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "location_name": self.location_name,
+            "location_type": self.location_type,
+            "dimension": self.dimension,
+        }    
+
 class Episode(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     episode_name = db.Column(db.String(120), unique=True, nullable=False)
     air_date = db.Column(db.String(250), unique=False, nullable=False)
     episode = db.Column(db.String(120), unique=True, nullable=False)
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "episode_name": self.episode_name,
+            "air_date": self.air_date,
+            "episode": self.episode,
+        }  
 
 class Favorites(db.Model):
     id = db.Column(db.Integer, primary_key=True)
