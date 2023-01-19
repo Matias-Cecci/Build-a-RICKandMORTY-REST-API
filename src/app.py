@@ -44,12 +44,17 @@ def get_all_users():
     print(user_serialized)
     return jsonify({"body" : user_serialized}), 200
 
-
 @app.route('/characters', methods=['GET'])
 def get_all_characters():
     characters = Character.query.all()
     characters_serialized = [x.serialize() for x in characters]
     return jsonify({"body" : characters_serialized}), 200
+
+@app.route('/characters/<int:id>', methods=['GET'])
+def get_character_by_id(id):
+    only_character = Character.get_character_id(id)
+    return jsonify(only_character.serialize()), 200
+    return jsonify({'error': 'character not found'}), 400
 
 @app.route('/episodes', methods=['GET'])
 def get_all_episodes():
@@ -62,6 +67,9 @@ def get_all_locations():
     locations = Location.query.all()
     locations_serialized = [x.serialize() for x in locations]
     return jsonify({"body" : locations_serialized}), 200
+
+
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':

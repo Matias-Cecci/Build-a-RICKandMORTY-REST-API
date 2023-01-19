@@ -37,9 +37,12 @@ class Character(db.Model):
             "gender": self.gender,
             "alive": self.alive,
             "species": self.species
-            # do not serialize the password, its a security breach
         }
 
+    @classmethod
+    def get_character_id(cls, id_character):
+        character = cls.query.get(id_character)
+        return character
 
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
