@@ -8,7 +8,11 @@ def setup_admin(app):
     app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
     admin = Admin(app, name='4Geeks Admin', template_mode='bootstrap4')
 
-    admin.add_view(ModelView(User, db.session))
-    admin.add_view(ModelView(Character, db.session))
-    admin.add_view(ModelView(Location, db.session))
-    admin.add_view(ModelView(Episode, db.session))
+    class MyModel(ModelView):
+        column_display_pk = True
+        column_display_fk = True
+
+    admin.add_view(MyModel(User, db.session))
+    admin.add_view(MyModel(Character, db.session))
+    admin.add_view(MyModel(Location, db.session))
+    admin.add_view(MyModel(Episode, db.session))

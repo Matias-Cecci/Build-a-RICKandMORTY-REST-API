@@ -9,8 +9,11 @@ class User(db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
-    is_active = db.Column(db.Boolean(), unique=False, nullable=False)
-
+    is_active = db.Column(db.Boolean(), unique=False, nullable=False, default=True)
+    charactersFav = db.relationship("Character", secondary="character_favs", lazy='subquery', backref=db.backref('users', lazy=True))
+    locationsFav = db.relationship("Location", secondary="location_favs", lazy='subquery', backref=db.backref('users', lazy=True))
+    episodesFav = db.relationship("Episode", secondary="episode_favs",lazy='subquery', backref=db.backref('users', lazy=True))
+    
     def serialize(self):
         return {
             "id": self.id,
@@ -18,7 +21,10 @@ class User(db.Model):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "email": self.email,
-            "is_active": self.is_active
+            "is_active": self.is_active,
+          #  "character_favs": [character.serialize() for character in self.character],
+           # "location_favs": [location.serialize() for location in self.location],
+           # "episode_favs": [episode.serialize() for episode in self.episode]
             # do not serialize the password, its a security breach
         }
 
@@ -29,7 +35,6 @@ class Character(db.Model):
     alive = db.Column(db.Boolean(), unique=False, nullable=False, default=True)
     species = db.Column(db.String(250),unique=False, nullable=False)
 
-
     def serialize(self):
         return {
             "id": self.id,
@@ -39,10 +44,10 @@ class Character(db.Model):
             "species": self.species
         }
 
-    @classmethod
-    def get_character_id(cls, id_character):
-        character = cls.query.get(id_character)
-        return character
+character_favs = db.Table('character_favs',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('character_id', db.Integer, db.ForeignKey('character.id'), primary_key=True)
+)
 
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -58,6 +63,11 @@ class Location(db.Model):
             "dimension": self.dimension,
         }    
 
+location_favs = db.Table('location_favs',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('location_id', db.Integer, db.ForeignKey('location.id'), primary_key=True)
+)
+
 class Episode(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     episode_name = db.Column(db.String(120), unique=True, nullable=False)
@@ -72,34 +82,7 @@ class Episode(db.Model):
             "episode": self.episode,
         }  
 
-class Favorites(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship(User)
-    character_id = db.Column(db.Integer, db.ForeignKey('character.id'))
-    character = db.relationship(Character)
-    location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
-    location = db.relationship(Location)
-    episode_id = db.Column(db.Integer, db.ForeignKey('episode.id'))
-    episode = db.relationship(Episode)
-
-class Locations_Episodes(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
-    location = db.relationship(Location)
-    episode_id = db.Column(db.Integer, db.ForeignKey('episode.id'))
-    episode = db.relationship(Episode)
-
-class Episodes_Characters(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    episode_id = db.Column(db.Integer, db.ForeignKey('episode.id'))
-    episode = db.relationship(Episode)
-    character_id = db.Column(db.Integer, db.ForeignKey('character.id'))
-    character = db.relationship(Character)
-
-class Characters_Locations(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    character_id = db.Column(db.Integer, db.ForeignKey('character.id'))
-    character = db.relationship(Character)
-    location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
-    location = db.relationship(Location)
+episode_favs = db.Table('episode_favs',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('episode_id', db.Integer, db.ForeignKey('episode.id'), primary_key=True)
+)
