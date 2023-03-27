@@ -39,6 +39,8 @@ def sitemap():
 
 # ACA EMPEZAMOS LOS ENDPOINTS
 
+# --------------------------USERS--------------------------
+
 @app.route('/users', methods=['GET'])
 def get_all_users():
     users = User.query.all()
@@ -61,7 +63,22 @@ def user_register():
     db.session.commit()
     return jsonify({"response": "User registered successfully"}), 200 
 
-#  CHARACTERS
+@app.route('/user/<int:user_id>', methods=['DELETE'])
+def delete_user_by_id(user_id):
+    user_query = User.query.get(user_id)
+    if not user_query:
+        response_body = {
+            "msg" : "This user doesn't exist, can't be deleted."
+        }
+        return jsonify(response_body), 200
+    db.session.delete(user_query)
+    db.session.commit()
+    response_body = {
+        "msg" : "User deleted correctly !"
+    }
+    return jsonify(response_body), 200
+
+#  --------------------------CHARACTERS--------------------------
 
 @app.route('/characters', methods=['GET'])
 def get_all_characters():
@@ -124,6 +141,134 @@ def get_location_by_id(location_id):
 
     location_serialize = location_query.serialize()
     return jsonify({"Result": location_serialize}), 200
+
+#  ------------- FAVORITES --------------------------
+
+@app.route('/user/<int:user_id>/favorites', methods=['GET'])
+def get_all_user_favorites(user_id):
+    favorites_characters = User.query.filter_by(id=user_id).first().charactersFav
+    favorites_locations = User.query.filter_by(id=user_id).first().locationsFav
+    favorites_episodes = User.query.filter_by(id=user_id).first().episodesFav
+    Characters = [x.serialize() for x in favorites_characters]
+    Locations = [x.serialize() for x in favorites_locations]
+    Episodes = [x.serialize() for x in favorites_episodes]
+
+    return jsonify({
+        "charactersFav": Characters,
+        "locationsFav": Locations,
+        "episodesFav": Episodes
+    }), 200    
+
+
+@app.route('/user/<int:user_id>/favorites/character', methods=['GET'])
+def get_character_user_favorites(user_id):
+    favorites_characters = User.query.filter_by(id=user_id).first().charactersFav
+    Characters = [x.serialize() for x in favorites_characters]
+
+    return jsonify({
+        "charactersFav": Characters,
+    }), 200 
+
+
+@app.route('/user/<int:user_id>/favorites/location', methods=['GET'])
+def get_location_user_favorites(user_id):
+    favorites_locations = User.query.filter_by(id=user_id).first().locationsFav
+    Locations = [x.serialize() for x in favorites_locations]
+
+    return jsonify({
+        "locationsFav": Locations,
+    }), 200 
+
+
+@app.route('/user/<int:user_id>/favorites/episode', methods=['GET'])
+def get_episode_user_favorites(user_id):
+    favorites_episodes = User.query.filter_by(id=user_id).first().episodesFav
+    Episodes = [x.serialize() for x in favorites_episodes]
+
+    return jsonify({
+        "episodesFav": Episodes
+    }), 200 
+
+# ADD FAVORITE CHARACTER
+@app.route('/user/<int:user_id>/favorites/characters/<int:character_id>', methods=['POST'])
+def add_character_favorite(user_id, character_id):
+    
+    user = User.query.get(user_id)
+    body_character_id = request.json.get("character_id")
+    character = Character.query.get(body_character_id)
+
+    user.charactersFav.append(character)
+
+    db.session.commit()
+
+    return jsonify({"response": "Character added to favorites"}), 200
+
+# ADD FAVORITE LOCATION
+@app.route('/user/<int:user_id>/favorites/locations/<int:location_id>', methods=['POST'])
+def add_location_favorite(user_id, location_id):
+    
+    user = User.query.get(user_id)
+    body_location_id = request.json.get("location_id")
+    location = Location.query.get(body_location_id)
+
+    user.locationsFav.append(location)
+
+    db.session.commit()
+
+    return jsonify({"response": "Location added to favorites"}), 200
+
+# ADD FAVORITE EPISODE
+@app.route('/user/<int:user_id>/favorites/episodes/<int:episode_id>', methods=['POST'])
+def add_episode_favorite(user_id, episode_id):
+    
+    user = User.query.get(user_id)
+    body_episode_id = request.json.get("episode_id")
+    episode = Episode.query.get(body_episode_id)
+
+    user.episodesFav.append(episode)
+
+    db.session.commit()
+
+    return jsonify({"response": "Episode added to favorites"}), 200
+
+# DELETE FAVORITE CHARACTER
+@app.route('/user/<int:user_id>/favorites/characters/<int:character_id>', methods=['DELETE'])
+def remove_character_favorite(user_id, character_id):
+    
+    user = User.query.get(user_id)
+    body_character_id = Character.query.get(character_id)
+
+    user.charactersFav.remove(body_character_id)
+
+    db.session.commit()
+
+    return jsonify({"response": "Character removed from favorites"}), 200
+
+# DELETE LOCATION CHARACTER
+@app.route('/user/<int:user_id>/favorites/locations/<int:location_id>', methods=['DELETE'])
+def remove_location_favorite(user_id, location_id):
+    
+    user = User.query.get(user_id)
+    location = Location.query.get(location_id)
+
+    user.locationsFav.remove(location)
+
+    db.session.commit()
+
+    return jsonify({"response": "Location removed from favorites"}), 200
+
+
+@app.route('/user/<int:user_id>/favorites/episodes/<int:episode_id>', methods=['POST'])
+def remove_episode_favorite(user_id, episode_id):
+    
+    user = User.query.get(user_id)
+    episode = Episode.query.get(episode_id)
+
+    user.episodesFav.remove(episode)
+
+    db.session.commit()
+
+    return jsonify({"response": "Episode added to favorites"}), 200
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
